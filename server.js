@@ -10,7 +10,29 @@ const nasaDataService = require('./services/nasaDataService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const ee = require('@google/earthengine');
+const privateKey = require('./unpaid-usage-473921-3933d28a9a72.json'); // Use the correct path
 
+ee.data.authenticateViaPrivateKey(
+  privateKey,
+  () => {
+    console.log('Earth Engine authentication successful.');
+    ee.initialize(
+      null,
+      null,
+      () => {
+        console.log('Earth Engine client library initialized.');
+        // Start your server or continue with your app logic here
+      },
+      (err) => {
+        console.error('Earth Engine initialization error:', err);
+      }
+    );
+  },
+  (err) => {
+    console.error('Earth Engine authentication error:', err);
+  }
+);
 // Security and performance middleware
 app.use(helmet());
 app.use(compression());
