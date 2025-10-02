@@ -17,13 +17,17 @@ app.use(compression());
 app.use(morgan('combined'));
 
 // CORS configuration for Vercel deployment
+const cors = require('cors');
+
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://halcyon-platform.vercel.app'] // your deployed frontend domain
+  : ['http://localhost:3000', 'http://127.0.0.1:5500'];
+
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? ['https://your-frontend-domain.vercel.app'] 
-        : ['http://localhost:3000', 'http://127.0.0.1:5500'],
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
 app.use(express.json({ limit: '10mb' }));
