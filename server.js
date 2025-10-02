@@ -17,7 +17,7 @@ app.use(compression());
 app.use(morgan('combined'));
 
 // CORS configuration for Vercel deployment
-const cors = require('cors');
+
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? ['https://halcyon-platform.vercel.app'] // your deployed frontend domain
