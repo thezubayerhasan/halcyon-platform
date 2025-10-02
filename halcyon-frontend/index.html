@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halcyon - Urban Resilience Intelligence Platform</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header__content">
+                <div class="header__branding">
+                    <h1 class="header__title">Halcyon</h1>
+                    <p class="header__subtitle">Urban Resilience Intelligence Platform</p>
+                </div>
+                <div class="header__badge">
+                    <span class="nasa-badge">NASA Space Apps Challenge 2024</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Application -->
+        <main class="main">
+            <!-- Left Control Panel -->
+            <aside class="control-panel">
+                <div class="panel">
+                    <div class="panel__header">
+                        <h2 class="panel__title">URVI Risk Weights</h2>
+                        <button class="btn btn--sm btn--outline" id="resetWeights">Reset to Default</button>
+                    </div>
+                    
+                    <div class="panel__body">
+                        <div class="weight-controls">
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Urban Heat Island Risk
+                                    <span class="weight-control__value" id="heat-value">25%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="heat-slider" min="0" max="50" value="25" data-factor="heat_risk">
+                            </div>
+
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Flood Risk
+                                    <span class="weight-control__value" id="flood-value">20%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="flood-slider" min="0" max="50" value="20" data-factor="flood_risk">
+                            </div>
+
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Groundwater Stress
+                                    <span class="weight-control__value" id="groundwater-value">15%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="groundwater-slider" min="0" max="50" value="15" data-factor="groundwater_stress">
+                            </div>
+
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Air Quality Risk
+                                    <span class="weight-control__value" id="air-value">15%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="air-slider" min="0" max="50" value="15" data-factor="air_quality">
+                            </div>
+
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Infrastructure Vulnerability
+                                    <span class="weight-control__value" id="infrastructure-value">10%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="infrastructure-slider" min="0" max="50" value="10" data-factor="infrastructure_vulnerability">
+                            </div>
+
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Social Vulnerability
+                                    <span class="weight-control__value" id="social-value">10%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="social-slider" min="0" max="50" value="10" data-factor="social_vulnerability">
+                            </div>
+
+                            <div class="weight-control">
+                                <label class="weight-control__label">
+                                    Economic Resilience
+                                    <span class="weight-control__value" id="economic-value">5%</span>
+                                </label>
+                                <input type="range" class="weight-slider" id="economic-slider" min="0" max="50" value="5" data-factor="economic_resilience">
+                            </div>
+                        </div>
+
+                        <div class="weight-total">
+                            <div class="weight-total__display">
+                                <span>Total: <strong id="total-weight">100%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Legend -->
+                <div class="panel mt-8">
+                    <div class="panel__header">
+                        <h3 class="panel__title">Risk Level Legend</h3>
+                    </div>
+                    <div class="panel__body">
+                        <div class="legend">
+                            <div class="legend__item">
+                                <div class="legend__color" style="background-color: #0d47a1;"></div>
+                                <span>Low Risk (0-20)</span>
+                            </div>
+                            <div class="legend__item">
+                                <div class="legend__color" style="background-color: #1976d2;"></div>
+                                <span>Low-Medium (20-40)</span>
+                            </div>
+                            <div class="legend__item">
+                                <div class="legend__color" style="background-color: #fbc02d;"></div>
+                                <span>Medium Risk (40-60)</span>
+                            </div>
+                            <div class="legend__item">
+                                <div class="legend__color" style="background-color: #f57c00;"></div>
+                                <span>High Risk (60-80)</span>
+                            </div>
+                            <div class="legend__item">
+                                <div class="legend__color" style="background-color: #d32f2f;"></div>
+                                <span>Extreme Risk (80-100)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Map -->
+            <section class="map-section">
+                <div class="map-container">
+                    <div id="map"></div>
+                    <div class="map-loading" id="mapLoading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading Dhaka wards...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Analysis Panel -->
+            <aside class="analysis-panel">
+                <div class="panel">
+                    <div class="panel__header">
+                        <h2 class="panel__title">Ward Analysis</h2>
+                    </div>
+                    
+                    <div class="panel__body">
+                        <div id="ward-overview" class="ward-overview hidden">
+                            <h3 id="ward-name">Select a ward</h3>
+                            <p id="ward-description">Click on a ward in the map to view detailed analysis</p>
+                            
+                            <div class="ward-stats">
+                                <div class="stat-grid">
+                                    <div class="stat-item">
+                                        <div class="stat-label">Population</div>
+                                        <div class="stat-value" id="ward-population">-</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">Area (km²)</div>
+                                        <div class="stat-value" id="ward-area">-</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">URVI Score</div>
+                                        <div class="stat-value urvi-score" id="ward-urvi">-</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">Risk Level</div>
+                                        <div class="stat-value" id="ward-risk-level">-</div>
+                                    </div>
+                                </div>
+
+                                <div class="infrastructure-stats">
+                                    <h4>Infrastructure</h4>
+                                    <div class="infrastructure-grid">
+                                        <div class="infrastructure-item">
+                                            <span>Hospitals:</span>
+                                            <span id="ward-hospitals">-</span>
+                                        </div>
+                                        <div class="infrastructure-item">
+                                            <span>Schools:</span>
+                                            <span id="ward-schools">-</span>
+                                        </div>
+                                        <div class="infrastructure-item">
+                                            <span>Critical Facilities:</span>
+                                            <span id="ward-facilities">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Risk Factor Charts -->
+                            <div class="chart-section">
+                                <h4>Risk Factor Analysis</h4>
+                                <div class="chart-container" style="position: relative; height: 250px;">
+                                    <canvas id="riskRadarChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-section">
+                                <div class="chart-container" style="position: relative; height: 200px;">
+                                    <canvas id="riskBarChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Scenario Simulation -->
+                            <div class="scenario-section">
+                                <h4>Intervention Scenarios</h4>
+                                <div class="intervention-controls">
+                                    <select id="interventionSelect" class="form-control">
+                                        <option value="">Select Intervention</option>
+                                        <option value="urban-greening">Urban Greening</option>
+                                        <option value="flood-management">Flood Management</option>
+                                        <option value="cool-infrastructure">Cool Infrastructure</option>
+                                        <option value="renewable-energy">Renewable Energy</option>
+                                    </select>
+                                    <button class="btn btn--primary btn--sm" id="simulateBtn">Simulate Impact</button>
+                                </div>
+                                <div id="simulation-results" class="simulation-results hidden">
+                                    <h5>Projected Impact</h5>
+                                    <div id="impact-display"></div>
+                                </div>
+                            </div>
+
+                            <!-- Export -->
+                            <div class="export-section">
+                                <button class="btn btn--outline btn--full-width" id="exportBtn">Export Action Brief</button>
+                            </div>
+                        </div>
+
+                        <div id="default-message" class="default-message">
+                            <div class="message-content">
+                                <h3>Welcome to Halcyon</h3>
+                                <p>Explore urban resilience across Dhaka's wards:</p>
+                                <ul>
+                                    <li>Adjust risk factor weights using the left panel</li>
+                                    <li>Watch the map update in real-time</li>
+                                    <li>Click on any ward for detailed analysis</li>
+                                    <li>Simulate intervention scenarios</li>
+                                </ul>
+                                <p class="data-source">Data sources: NASA Earth Science Data, OpenStreetMap, Dhaka City Corporation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
